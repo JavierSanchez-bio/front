@@ -1,1 +1,6 @@
 add_subdirectory(Foo)
+add_subdirectory(Date)
+add_subdirectory(Flows)
+# add_subdirectory(Instruments)
+add_subdirectory(Maths)
+# add_subdirectory(Valuation)

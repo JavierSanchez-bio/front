@@ -20,5 +20,7 @@ Para que el proyecto compile correctamente en **Windows**, es estrictamente nece
 4. git pull origin main --> Por si acaso alguien ha subido código desde que empezaste a trabajar
 5. git push origin main
 
+Extra: cmake .. -G "MinGW Makefiles"
+
 > 🛑 **REGLA DE ORO SOBRE LAS RUTAS:**
 > El compilador de MinGW falla si hay espacios o caracteres especiales (como **tildes** o eñes) ens
