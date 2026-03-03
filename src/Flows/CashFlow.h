@@ -1,8 +1,17 @@
-#include "CashFlow.h"
-#include <cmath>
+#ifndef CASH_FLOW_H
+#define CASH_FLOW_H
 
 namespace Flows {
-    double CashFlow::presentValue(double rate) const {
-        return amount / std::pow(1.0 + rate, yearFraction);
-    }
+    class CashFlow {
+    private:
+        double amount;
+        double yearFraction;
+
+    public:
+        CashFlow(double amt, double yf) : amount(amt), yearFraction(yf) {}
+        double presentValue(double rate) const;
+        double getAmount() const { return amount; }
+    };
 }
+
+#endif
