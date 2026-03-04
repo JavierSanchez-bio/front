@@ -1,2 +1,2 @@
 add_subdirectory(tests)
-create_library(NAME Instruments DEPS Flows)
+create_library(NAME Instruments DEPS Flows Maths)

@@ -42,6 +42,10 @@ public:
         }
         return pv;
     }
+
+    const std::vector<Flows::CashFlow>& getCashFlows() const {
+        return cashflows_;
+    }
 };
 
 // Pata Fija: Hereda todo tal cual. 

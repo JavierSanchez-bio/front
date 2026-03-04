@@ -1,4 +1,9 @@
 #include "Bond.h"
+#include "../Maths/NewtonRaphson.h" // Ajusta la ruta si es necesario
+
+#include <cmath>
+#include <functional>
+#include <stdexcept>
 
 Bond::Bond(std::shared_ptr<ZeroCouponCurve> curve, const Leg& leg)
     : Instrument(std::move(curve)), leg_(leg)
@@ -7,13 +12,49 @@ Bond::Bond(std::shared_ptr<ZeroCouponCurve> curve, const Leg& leg)
 
 double Bond::price() const
 {
-    // El precio del bono es simplemente el valor presente (PV) de su pata.
-    // Usamos el puntero 'discount_curve' que heredamos de la clase Instrument
-    // y lo desreferenciamos con '*' porque el método price de Leg pide una referencia.
-    
     if (discount_curve) {
         return leg_.price(*discount_curve);
     }
+    return 0.0;
+}
+
+double Bond::yield() const
+{
+    // Si no nos dan precio, calculamos la TIR que iguala el precio teórico actual
+    return yield(this->price());
+}
+
+double Bond::yield(double target_price) const
+{
+    const auto& cfs = leg_.getCashFlows();
     
-    return 0.0; // Por seguridad, si no hay curva, devolvemos 0
+    if (cfs.empty()) {
+        throw std::logic_error("Bond::yield: No se puede calcular la TIR de un bono sin flujos.");
+    }
+
+    // Definimos f(y) = Sumatoria(CF * e^{-y * t}) - target_price
+    std::function<double(double)> f = [&cfs, target_price](double y) {
+        double pv = 0.0;
+        for (const auto& cf : cfs) {
+            double t = cf.getYearFraction();
+            pv += cf.getAmount() * std::exp(-y * t);
+        }
+        return pv - target_price;
+    };
+
+    // Definimos f'(y) = Sumatoria(CF * (-t) * e^{-y * t})
+    std::function<double(double)> df = [&cfs](double y) {
+        double dpv = 0.0;
+        for (const auto& cf : cfs) {
+            double t = cf.getYearFraction();
+            dpv += cf.getAmount() * (-t) * std::exp(-y * t);
+        }
+        return dpv;
+    };
+
+    // Estimación inicial (Seed) del 5%
+    double initial_guess = 0.05;
+
+    // Llamamos a tu función de Newton-Raphson
+    return Maths::newtonRaphson(f, df, initial_guess);
 }

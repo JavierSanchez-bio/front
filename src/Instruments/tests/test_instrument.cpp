@@ -3,6 +3,7 @@
 
 #include <Instruments/ZeroCouponCurve.h>
 #include <Instruments/Leg.h>
+#include <Instruments/Bond.h>
 #include <Instruments/Swap.h>
 #include <Instruments/Index.h>
 #include <Flows/CashFlow.h>
@@ -11,6 +12,8 @@
 #include <vector>
 #include <cmath>
 #include <memory>
+#include <iostream>
+#include <stdio.h>
 
 BOOST_AUTO_TEST_SUITE(TestInstruments)
 
@@ -125,5 +128,52 @@ BOOST_AUTO_TEST_CASE(test_swap_valuation_pdf)
     // Comprobamos que no da error y devuelve un número 
     BOOST_CHECK(std::abs(npv) > 0.0);
 }
+
+BOOST_AUTO_TEST_CASE(test_bond_yield_class_example_real)
+{
+    // 1. Datos reales del problema de clase
+    std::vector<double> times    = {0.5, 1.0, 1.5, 2.0};
+    std::vector<double> zc_rates = {0.05, 0.058, 0.064, 0.068};
+    
+    auto curve = std::make_shared<ZeroCouponCurve>(times, zc_rates);
+
+    // Bono a 2 años, Nocional 100, Cupón 6% anual (3 por semestre)
+    std::vector<Flows::CashFlow> cfs;
+    cfs.emplace_back(3, 0.5);   
+    cfs.emplace_back(3, 1.0);   
+    cfs.emplace_back(3, 1.5);   
+    cfs.emplace_back(103, 2.0); 
+    
+    FixedLeg bondLeg(cfs);
+    Bond bond(curve, bondLeg);
+
+    // 2. Calculamos el precio teórico usando puramente la curva de descuento
+    // (P = 3*e^(-0.05*0.5) + 3*e^(-0.058*1) + ... + 103*e^(-0.068*2))
+    // Matemáticamente esto da ~98.385
+    double theoretical_price = bond.price();
+
+    // 3. Le pedimos la TIR usando el método que llama al Newton-Raphson interno
+    // sin pasarle ningún precio forzado. Usará el theoretical_price.
+    double theoretical_ytm = bond.yield();
+
+    // Mostramos por consola para ver los resultados exactos
+    printf("%.10lf\n", theoretical_price);
+    std::cout << "Precio derivado de la curva: " << theoretical_price << std::endl;
+    std::cout << "TIR continua (YTM): " << theoretical_ytm << std::endl;
+
+    // 4. Comprobaciones
+    // La TIR continua exacta para un precio de 98.385 es ~0.06762 (6.76%)
+    // Usamos una tolerancia de 1e-2 (0.01) para que pase si en clase redondeasteis a 6.7% o 6.8%
+    BOOST_TEST(theoretical_ytm == 0.06762, boost::test_tools::tolerance(1e-2));
+
+    // Por seguridad, si descontamos con esa TIR continua recién calculada, 
+    // tenemos que volver exactamente al precio original.
+    double npv_with_yield = 0.0;
+    for (const auto& cf : bondLeg.getCashFlows()) {
+        npv_with_yield += cf.getAmount() * std::exp(-theoretical_ytm * cf.getYearFraction());
+    }
+    BOOST_TEST(npv_with_yield == theoretical_price, boost::test_tools::tolerance(1e-7));
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
