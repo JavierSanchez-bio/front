@@ -11,8 +11,11 @@ public:
     ZeroCouponCurve(const std::vector<double>& times,
                     const std::vector<double>& zc_rates);
 
+    //Zero cupon
+    double get_zc(double t) const;
+    
     // Factor de descuento
-    double df(double t) const;
+    double get_dcf(double t) const;
 
     // Tipo forward continuamente compuesto
     double forward_cc(std::size_t i) const;

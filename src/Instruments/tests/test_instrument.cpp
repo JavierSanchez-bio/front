@@ -12,6 +12,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestInstruments)
 
+
 BOOST_AUTO_TEST_CASE(test_zero_coupon_curve_dfs)
 {
     std::vector<double> times     = {0.5, 1.0, 1.5, 2.0};

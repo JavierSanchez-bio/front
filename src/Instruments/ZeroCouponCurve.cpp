@@ -12,14 +12,20 @@ ZeroCouponCurve::ZeroCouponCurve(const std::vector<double>& times,
     }
 }
 
-double ZeroCouponCurve::df(double t) const
+double ZeroCouponCurve::get_zc(double t) const
 {
     for (std::size_t i = 0; i < times_.size(); ++i) {
         if (std::abs(times_[i] - t) < 1e-10) {
-            return std::exp(-zc_[i] * times_[i]);
+            return zc_[i];
         }
     }
-    throw std::out_of_range("ZeroCouponCurve::df: vencimiento no encontrado");
+    throw std::out_of_range("ZeroCouponCurve::get_zc: vencimiento no encontrado");
+}
+
+double ZeroCouponCurve::get_dcf(double t) const
+{
+    double rate = get_zc(t); 
+    return std::exp(-rate * t);
 }
 
 double ZeroCouponCurve::forward_cc(std::size_t i) const
@@ -33,13 +39,11 @@ double ZeroCouponCurve::forward_cc(std::size_t i) const
     double ZCi   = zc_[i];
     double ZCi_1 = zc_[i - 1];
 
-    // (2.3) del PDF:
     return (ZCi * Ti - ZCi_1 * Ti_1) / (Ti - Ti_1);
 }
 
 double ZeroCouponCurve::forward_simple(std::size_t i, double m) const
 {
-    // Ecuación (2.2)
     double Rc = forward_cc(i);
     return m * (std::exp(Rc / m) - 1.0);
 }
