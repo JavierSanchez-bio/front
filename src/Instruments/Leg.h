@@ -55,7 +55,7 @@ public:
 class FloatingLeg : public Leg {
 private:
     std::shared_ptr<Index> index_;
-    double spread_; // Margen sobre el índice (ej: Euribor + 0.01)
+    double spread_; // (ej: Euribor + 0.01)
 
 public:
     // Constructor: Recibe los flujos (que guardarán el Nocional), el índice y el spread.
@@ -67,24 +67,24 @@ public:
     {
         double pv = 0.0;
         
-        // Empezamos en i=1 porque el forward_cc de tu ZeroCurve lanza error si i=0.
-        // iteramos hasta el tamaño de los flujos.
-        for (std::size_t i = 1; i <= cashflows_.size(); ++i) {
+        // ¡AQUÍ ESTABA EL FALLO! Empezamos en 0 y terminamos estrictamente antes de size()
+        for (std::size_t i = 0; i < cashflows_.size(); ++i) {
             
-            // Ajustamos a i-1 para acceder al vector correctamente (que empieza en 0)
-            const auto& cf = cashflows_[i - 1]; 
+            const auto& cf = cashflows_[i]; 
             
-            // 1. Calculamos la tasa del índice para este periodo
+            // 1. Calculamos la tasa del índice para este periodo (0, 1, 2, 3)
             double rate = index_->get_fixing(i) + spread_;
             
-            // 2. Para la pata flotante, asumimos que getAmount() guarda el Principal/Nocional.
-            // Pago esperado = Nocional * Tasa * Fracción de año (dt)
-            double expected_payment = cf.getAmount() * rate * cf.getYearFraction();
-            
-            // 3. Descontamos el pago al presente usando la curva
+            // 2. Calculamos el dt (fracción de año del periodo)
             double t = cf.getYearFraction();
-            double df = curve.get_dcf(t);
+            double t_prev = (i == 0) ? 0.0 : cashflows_[i - 1].getYearFraction();
+            double dt = t - t_prev;
             
+            // 3. Pago esperado = Nocional * Tasa * Fracción de año (dt)
+            double expected_payment = cf.getAmount() * rate * dt;
+            
+            // 4. Descontamos
+            double df = curve.get_dcf(t);
             pv += expected_payment * df;
         }
         return pv;

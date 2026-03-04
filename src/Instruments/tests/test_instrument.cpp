@@ -6,6 +6,7 @@
 #include <Instruments/Swap.h>
 #include <Instruments/Index.h>
 #include <Flows/CashFlow.h>
+#include <Instruments/InstrumentFactory.h>
 
 #include <vector>
 #include <cmath>
@@ -93,6 +94,36 @@ BOOST_AUTO_TEST_CASE(test_swap_price_logic)
 
     double npv = swap.price();
     BOOST_TEST(npv == expected_npv, boost::test_tools::tolerance(1e-12));
+}
+
+BOOST_AUTO_TEST_CASE(test_swap_valuation_pdf)
+{
+    // Datos del PDF (Página 25)
+    double notional = 100000000.0; // 100 Millones
+    double fixedRate = 0.05;       // 5% Fijo
+    
+    // Curva ZC (4.74%, 5.00%, 5.10%, 5.20%)
+    std::vector<double> times = {0.5, 1.0, 1.5, 2.0};
+    std::vector<double> zc_rates = {0.0474, 0.0500, 0.0510, 0.0520};
+    
+    // En este caso, la curva de descuento y la forward son la misma
+    auto curve = std::make_shared<ZeroCouponCurve>(times, zc_rates);
+
+    // Usamos la Factory para crear el Swap (Recibiendo fijo)
+    // 2 años, frecuencia semestral (2)
+    auto mySwap = InstrumentFactory::createVanillaSwap(
+        notional, fixedRate, 2, 2, true, curve, curve
+    );
+
+    // Calculamos el NPV
+    double npv = mySwap->price();
+
+    BOOST_TEST_MESSAGE("========================================");
+    BOOST_TEST_MESSAGE("NPV del Swap Calculado: " << npv);
+    BOOST_TEST_MESSAGE("========================================");
+
+    // Comprobamos que no da error y devuelve un número 
+    BOOST_CHECK(std::abs(npv) > 0.0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

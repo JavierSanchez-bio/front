@@ -30,8 +30,9 @@ double ZeroCouponCurve::get_dcf(double t) const
 
 double ZeroCouponCurve::forward_cc(std::size_t i) const
 {
-    if (i == 0 || i >= times_.size()) {
-        throw std::out_of_range("ZeroCouponCurve::forward_cc: índice fuera de rango");
+
+    if (i == 0) {
+        return zc_[0];
     }
 
     double Ti   = times_[i];
