@@ -35,7 +35,7 @@ public:
         for (const auto& cf : cashflows_) {
             double t  = cf.getYearFraction();
             
-            // CORREGIDO: Usamos get_dcf() para coincidir con tu ZeroCouponCurve
+            
             double df = curve.get_dcf(t); 
             
             pv += cf.getAmount() * df;
@@ -71,7 +71,7 @@ public:
     {
         double pv = 0.0;
         
-        // ¡AQUÍ ESTABA EL FALLO! Empezamos en 0 y terminamos estrictamente antes de size()
+        
         for (std::size_t i = 0; i < cashflows_.size(); ++i) {
             
             const auto& cf = cashflows_[i]; 
