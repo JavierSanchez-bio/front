@@ -1,4 +1,3 @@
 build/
 .vscode/
 *.pdf
-/CMakeLists.txt
