@@ -1,1 +1,1 @@
-boost_test_project(NAME test_instrument DEPS Instrument)
+boost_test_project(NAME test_instrument DEPS Instruments)

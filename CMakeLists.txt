@@ -11,8 +11,8 @@ set(INCLUDE_HOME ${PROJECT_SOURCE_DIR}/src)
 set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-lib)
 
 # - Configuración completa de Boost para MinGW en Windows
-set(BOOST_ROOT "C:/boost_1_81_0")
-set(BOOST_LIBRARYDIR "C:/boost_1_81_0/stage/lib") # Dónde están los binarios
+set(BOOST_ROOT "C:/boost_1_90_0")
+set(BOOST_LIBRARYDIR "C:/boost_1_90_0/stage/lib") # Dónde están los binarios
 set(Boost_ARCHITECTURE "-x64")                    # Arquitectura de MinGW
 set(Boost_USE_STATIC_LIBS ON)                     # Buscar archivos .a
 
