@@ -12,14 +12,49 @@ ZeroCouponCurve::ZeroCouponCurve(const std::vector<double>& times,
     }
 }
 
+void ZeroCouponCurve::add_pillar(double t, double zc_rate)
+{
+    // Buscamos la posición donde debería ir este tiempo para mantener el vector ordenado
+    auto it = std::lower_bound(times_.begin(), times_.end(), t);
+    auto index = std::distance(times_.begin(), it);
+
+    // Si ya existe un pilar en ese mismo instante de tiempo (con un pequeño margen de error), lo actualizamos
+    if (it != times_.end() && std::abs(*it - t) < 1e-10) {
+        zc_[index] = zc_rate;
+    } else {
+        // Si no existe, insertamos el tiempo y el tipo cero en su posición
+        times_.insert(it, t);
+        zc_.insert(zc_.begin() + index, zc_rate);
+    }
+}
+
 double ZeroCouponCurve::get_zc(double t) const
 {
-    for (std::size_t i = 0; i < times_.size(); ++i) {
-        if (std::abs(times_[i] - t) < 1e-10) {
-            return zc_[i];
+    if (times_.empty()) {
+        throw std::out_of_range("ZeroCouponCurve::get_zc: La curva esta vacia");
+    }
+
+    if (t <= times_.front()) {
+        return zc_.front();
+    }
+    
+    if (t >= times_.back()) {
+        return zc_.back();
+    }
+
+    for (std::size_t i = 1; i < times_.size(); ++i) {
+        if (t <= times_[i]) {
+            double t0 = times_[i - 1];
+            double t1 = times_[i];
+            double zc0 = zc_[i - 1];
+            double zc1 = zc_[i];
+
+            double weight = (t - t0) / (t1 - t0);
+            return zc0 + weight * (zc1 - zc0);
         }
     }
-    throw std::out_of_range("ZeroCouponCurve::get_zc: vencimiento no encontrado");
+    
+    return 0.0;
 }
 
 double ZeroCouponCurve::get_dcf(double t) const

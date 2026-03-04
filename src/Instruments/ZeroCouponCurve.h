@@ -5,16 +5,22 @@
 #include <cstddef>
 
 // Curva de tipos cero cupón continuamente compuestos.
-// times (años) y zc_rates (cupones cero)
 class ZeroCouponCurve {
 public:
+    // Constructor vacío (necesario para inicializar el Bootstrapping)
+    ZeroCouponCurve() = default;
+
+    // Constructor clásico
     ZeroCouponCurve(const std::vector<double>& times,
                     const std::vector<double>& zc_rates);
 
-    //Zero cupon
+    // NUEVO: Permite añadir puntos a la curva dinámicamente
+    void add_pillar(double t, double zc_rate);
+
+    // Zero cupon (AHORA CON INTERPOLACIÓN)
     double get_zc(double t) const;
     
-    // Factor de descuento
+    // Factor de descuento (Llama a get_zc internamente)
     double get_dcf(double t) const;
 
     // Tipo forward continuamente compuesto
@@ -29,4 +35,3 @@ private:
 };
 
 #endif // ZERO_COUPON_CURVE_H
-

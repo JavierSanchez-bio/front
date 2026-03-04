@@ -42,3 +42,7 @@ short Thirty_360::compute_daycount(const short years,
     std::max<short>(0, 30 - days_from) +
     std::min<short>(30, days_to);
 }
+
+boost::gregorian::date DayCountCalculator::make_date(const std::string& date) {
+    return boost::gregorian::from_string(date);
+}
