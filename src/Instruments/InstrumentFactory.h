@@ -12,7 +12,7 @@ public:
     static std::shared_ptr<Instrument> createSwap(
         double notional,
         double fixedRate,
-        int years,
+        double years,
         int frequency,
         bool receiveFixed,
         std::shared_ptr<ZeroCouponCurve> discountCurve,

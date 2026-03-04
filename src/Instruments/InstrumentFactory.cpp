@@ -6,7 +6,7 @@
 std::shared_ptr<Instrument> InstrumentFactory::createSwap(
     double notional,
     double fixedRate,
-    int years,
+    double years,
     int frequency,
     bool receiveFixed,
     std::shared_ptr<ZeroCouponCurve> discountCurve,
@@ -15,7 +15,7 @@ std::shared_ptr<Instrument> InstrumentFactory::createSwap(
     std::vector<Flows::CashFlow> fixedFlows;
     std::vector<Flows::CashFlow> floatingFlows;
 
-    int totalPeriods = years * frequency;
+    int totalPeriods = static_cast<int>(years * frequency);
     double dt = 1.0 / frequency;
 
     for (int i = 1; i <= totalPeriods; ++i) {

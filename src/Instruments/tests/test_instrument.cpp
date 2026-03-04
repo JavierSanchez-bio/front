@@ -8,6 +8,8 @@
 #include <Instruments/Index.h>
 #include <Flows/CashFlow.h>
 #include <Instruments/InstrumentFactory.h>
+#include <Instruments/Bootstrapper.h>
+#include <Instruments/Deposit.h>
 
 #include <vector>
 #include <cmath>
@@ -178,6 +180,53 @@ BOOST_AUTO_TEST_CASE(test_bond_yield_class_example_real)
         npv_with_yield += cf.getAmount() * std::exp(-theoretical_ytm * cf.getYearFraction());
     }
     BOOST_TEST(npv_with_yield == theoretical_price, boost::test_tools::tolerance(1e-7));
+}
+
+BOOST_AUTO_TEST_CASE(test_bootstrapping_ejercicio_3_1)
+{
+    std::cout << "\n--- INICIANDO CALIBRACION (EJERCICIO 3.1) ---" << std::endl;
+
+    // 1. Empezamos con una curva vacía.
+    auto curve = std::make_shared<ZeroCouponCurve>();
+    
+    // 2. Instanciamos nuestro motor numérico.
+    Bootstrapper bootstrapper(curve);
+
+    // 3. Creamos los instrumentos de mercado según el PDF (Nocional = 100)
+    // Depósito a 6 meses (0.5 años) al 5%
+    auto dep_6m = std::make_shared<Deposit>(curve, 0.05, 0.5, 100.0);
+    
+    // Swap a 12 meses (1.0 año) al 5.5%, pagos semianuales (f=2)
+    auto swap_12m = InstrumentFactory::createSwap(
+        100.0, 0.055, 1.0, 2, true, curve, curve);
+
+    // Swap a 18 meses (1.5 años) al 6.0%, pagos semianuales (f=2)
+    auto swap_18m = InstrumentFactory::createSwap(
+        100.0, 0.060, 1.5, 2, true, curve, curve);
+
+    // Swap a 2 años (2.0 años) al 6.4%, pagos semianuales (f=2)
+    auto swap_2y = InstrumentFactory::createSwap(
+        100.0, 0.064, 2.0, 2, true, curve, curve);
+
+    // 4. Metemos los instrumentos al Bootstrapper indicando su vencimiento
+    bootstrapper.add_instrument(0.5, dep_6m);
+    bootstrapper.add_instrument(1.0, swap_12m);
+    bootstrapper.add_instrument(1.5, swap_18m);
+    bootstrapper.add_instrument(2.0, swap_2y);
+
+    // 5. ¡A CALIBRAR! (Esto resuelve el sistema de Newton-Raphson iterativamente)
+    
+    bootstrapper.build_curve();
+
+    // 6. Comprobación matemática (Testing)
+    // Si la curva está bien construida, TODOS los instrumentos deben valer 0.0 a precios de mercado.
+    // Usamos una tolerancia de 1e-6 (típica en finanzas para NPV de 100 euros)
+    BOOST_TEST(dep_6m->price() == 0.0, boost::test_tools::tolerance(1e-6));
+    BOOST_TEST(swap_12m->price() == 0.0, boost::test_tools::tolerance(1e-6));
+    BOOST_TEST(swap_18m->price() == 0.0, boost::test_tools::tolerance(1e-6));
+    BOOST_TEST(swap_2y->price() == 0.0, boost::test_tools::tolerance(1e-6));
+
+    std::cout << "--- CALIBRACION COMPLETADA CON EXITO ---\n" << std::endl;
 }
 
 

@@ -20,20 +20,20 @@ void Bootstrapper::build_curve()
     std::sort(instruments_.begin(), instruments_.end(),
               [](const auto& a, const auto& b) { return a.first < b.first; });
 
+    double last_t = 0.0; // <-- NUEVO: Controlamos cuál fue el último pilar añadido
+
     // 2. Iteramos sobre cada instrumento para encontrar el tipo cero de su pilar
     for (const auto& pair : instruments_) {
         double T = pair.first;
         auto inst = pair.second;
 
-        // Función objetivo f(z): Añadimos el tipo 'z' en el tiempo 'T' y vemos el NPV
-        // Buscamos la raíz f(z) = 0 (que el instrumento cotice a la par)
+        // Función objetivo f(z)
         std::function<double(double)> f = [&](double z) {
             curve_->add_pillar(T, z);
             return inst->price(); 
         };
 
-        // Derivada numérica para el Newton-Raphson (Diferencias finitas centrales)
-        // df/dz ≈ (f(z + h) - f(z - h)) / 2h
+        // Derivada numérica
         std::function<double(double)> df = [&](double z) {
             double h = 1e-5;
             double f_plus = f(z + h);
@@ -41,12 +41,12 @@ void Bootstrapper::build_curve()
             return (f_plus - f_minus) / (2.0 * h);
         };
 
-        // Estimación inicial (seed) del 5%
+        // Estimación inicial por defecto
         double initial_guess = 0.05; 
         
-        // Si ya hay puntos en la curva, usamos el último tipo calculado como mejor aproximación
-        if (T > 0.1) {
-            initial_guess = curve_->get_zc(T - 0.01);
+        // CORRECCIÓN: Si ya hemos calibrado algún pilar anterior, usamos ese valor
+        if (last_t > 0.0) {
+            initial_guess = curve_->get_zc(last_t);
         }
 
         // 3. ¡Magia! El solver encuentra el tipo cero exacto para este vencimiento
@@ -55,7 +55,9 @@ void Bootstrapper::build_curve()
         // 4. Fijamos el pilar definitivo en la curva
         curve_->add_pillar(T, z_solved);
         
-        // (Opcional) Imprimimos el progreso para ver cómo se construye la curva
+        // Actualizamos nuestro control del último pilar
+        last_t = T; 
+        
         std::cout << "Calibrado pilar T=" << T << " -> Tipo Cero: " << (z_solved * 100.0) << "%" << std::endl;
     }
 }
