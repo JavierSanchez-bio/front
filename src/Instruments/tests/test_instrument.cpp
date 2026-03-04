@@ -114,16 +114,21 @@ BOOST_AUTO_TEST_CASE(test_swap_valuation_pdf)
 
     // Usamos la Factory para crear el Swap (Recibiendo fijo)
     // 2 años, frecuencia semestral (2)
-    auto mySwap = InstrumentFactory::createVanillaSwap(
+    auto myInstrument = InstrumentFactory::createSwap(
         notional, fixedRate, 2, 2, true, curve, curve
     );
 
-    // Calculamos el NPV
+    // CASTEAMOS: Le decimos a C++ "Oye, confía en mí, esto es un Swap"
+    auto mySwap = std::dynamic_pointer_cast<Swap>(myInstrument);
+
+    // Calculamos los NPVs por separado usando los "getters" que tienes en Swap.h
+    double pvFixed = mySwap->fixedLeg().price(*curve);
+    double pvFloat = mySwap->floatingLeg().price(*curve);
     double npv = mySwap->price();
 
-    BOOST_TEST_MESSAGE("========================================");
-    BOOST_TEST_MESSAGE("NPV del Swap Calculado: " << npv);
-    BOOST_TEST_MESSAGE("========================================");
+    BOOST_TEST_MESSAGE("PV Pata Fija (Ingresos) : " << pvFixed);
+    BOOST_TEST_MESSAGE("PV Pata Flotante (Pagos): " << pvFloat);
+    BOOST_TEST_MESSAGE("NPV Total del Swap      : " << npv);
 
     // Comprobamos que no da error y devuelve un número 
     BOOST_CHECK(std::abs(npv) > 0.0);

@@ -9,7 +9,7 @@ class ZeroCouponCurve;
 
 class InstrumentFactory {
 public:
-    static std::shared_ptr<Instrument> createVanillaSwap(
+    static std::shared_ptr<Instrument> createSwap(
         double notional,
         double fixedRate,
         int years,

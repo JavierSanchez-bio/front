@@ -3,7 +3,7 @@
 #include "Index.h"
 #include <Flows/CashFlow.h>
 
-std::shared_ptr<Instrument> InstrumentFactory::createVanillaSwap(
+std::shared_ptr<Instrument> InstrumentFactory::createSwap(
     double notional,
     double fixedRate,
     int years,
