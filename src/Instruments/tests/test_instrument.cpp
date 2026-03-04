@@ -3,10 +3,12 @@
 
 #include <Instruments/ZeroCouponCurve.h>
 #include <Instruments/Leg.h>
+#include <Instruments/Swap.h>
 #include <Flows/CashFlow.h>
 
 #include <vector>
 #include <cmath>
+#include <memory>
 
 BOOST_AUTO_TEST_SUITE(TestInstruments)
 
@@ -50,6 +52,31 @@ BOOST_AUTO_TEST_CASE(test_fixed_leg_price_with_curve)
 
     double pv_leg = leg.price(curve);
     BOOST_TEST(pv_leg == pv_expected, boost::test_tools::tolerance(1e-12));
+}
+
+BOOST_AUTO_TEST_CASE(test_swap_price_with_equal_legs_is_zero)
+{
+    std::vector<double> times     = {0.5, 1.0, 1.5, 2.0};
+    std::vector<double> zc_rates  = {0.0474, 0.0500, 0.0510, 0.0520};
+
+    auto curve = std::make_shared<ZeroCouponCurve>(times, zc_rates);
+
+    // Misma secuencia de flujos en fija y flotante → NPV ~ 0
+    std::vector<Flows::CashFlow> fixedCfs;
+    std::vector<Flows::CashFlow> floatCfs;
+    for (double t : times) {
+        fixedCfs.emplace_back(1.0, t);
+        floatCfs.emplace_back(1.0, t);
+    }
+
+    FixedLeg fixedLeg(fixedCfs);
+    FloatingLeg floatLeg(floatCfs);
+
+    // Recibimos fija, pagamos flotante. Como son idénticas, el NPV debe ser ~ 0
+    Swap swap(curve, fixedLeg, floatLeg, /*receiveFixed=*/true);
+
+    double npv = swap.price();
+    BOOST_TEST(npv == 0.0, boost::test_tools::tolerance(1e-12));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
