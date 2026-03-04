@@ -1,13 +1,39 @@
-#ifndef DAY_COUNT_H
-#define DAY_COUNT_H
+#pragma once
+#include <string>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
-namespace Date {
-    enum class Convention { ACT_360, THIRTY_360 };
+class DayCountCalculator
+{
+public:
+    static boost::gregorian::date make_date(const std::string& date);
+};
 
-    class DayCount {
-    public:
-        static double yearFraction(double days, Convention convention);
-    };
-}
+class Actual_360 : public DayCountCalculator{
+public:
+    static short compute_daycount(const std::string& from, const std::string& to);
+    static short compute_daycount(const boost::gregorian::date & from,
+                                  const boost::gregorian::date & to);
+                                  
+    template <typename DATE>
+    double operator () (const DATE& start, const DATE& end) const
+    {
+        return compute_daycount(start, end)/ 360.0;
+    }
+};
 
-#endif
+class Thirty_360 : public DayCountCalculator{
+public:
+    static short compute_daycount(const std::string& from, const std::string& to);
+    static short compute_daycount(const boost::gregorian::date & from,
+                                  const boost::gregorian::date & to);
+    static short compute_daycount(const short years,
+                                  const short months,
+                                  const short days_from,
+                                  const short days_to);
+                                  
+    template <typename DATE>
+    double operator () (const DATE& start, const DATE& end) const
+    {
+        return compute_daycount(start, end)/ 360.0;
+    }
+};
