@@ -30,5 +30,8 @@ std::shared_ptr<Instrument> InstrumentFactory::createSwap(
     auto euribor = std::make_shared<Index>(forwardCurve);
     FloatingLeg floatingLeg(floatingFlows, euribor, 0.0);
 
-    return std::make_shared<Swap>(discountCurve, fixedLeg, floatingLeg, receiveFixed);
+    // ---> AQUI ESTÁ EL CAMBIO <---
+    // Añadimos 'fixedRate' y 'dt' al final para que el Swap los guarde 
+    // y pueda calcular su factor de descuento analítico.
+    return std::make_shared<Swap>(discountCurve, fixedLeg, floatingLeg, receiveFixed, fixedRate, dt);
 }

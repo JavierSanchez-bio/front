@@ -34,3 +34,12 @@ double Deposit::impliedDiscountFactor() const
     // P(t, T) = 1 / (1 + R * dt)
     return 1.0 / (1.0 + rate_ * yearFraction_);
 }
+
+double Deposit::computeDiscountFactor(double& annuity) const {
+    // Fórmula del Depósito: DF = 1 / (1 + Rate * dt)
+    double df = 1.0 / (1.0 + rate_ * yearFraction_);
+    
+    // El depósito suma la primera parte de la anualidad (DF * dt) para el Swap a 12m
+    annuity += df * yearFraction_;
+    return df;
+}

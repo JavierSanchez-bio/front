@@ -14,10 +14,16 @@ class Swap : public Instrument {
 public:
     // Si receiveFixed == true, el valor es PV(Fixed) - PV(Floating)
     // Si receiveFixed == false, el valor es PV(Floating) - PV(Fixed)
-    Swap(std::shared_ptr<ZeroCouponCurve> curve,
-         const FixedLeg& fixedLeg,
-         const FloatingLeg& floatingLeg,
-         bool receiveFixed);
+    // Constructor nuevo
+    Swap(std::shared_ptr<ZeroCouponCurve> curve, 
+        const FixedLeg& fixed, 
+        const FloatingLeg& floating, 
+        bool receiveFixed, 
+        double fixedRate = 0.0, 
+        double dt = 0.0);
+
+// Función del profesor
+double computeDiscountFactor(double& annuity) const override;
 
     double price() const override;
 
@@ -28,6 +34,8 @@ private:
     FixedLeg   fixedLeg_;
     FloatingLeg floatingLeg_;
     bool       receiveFixed_;
+    double fixedRate_;
+    double dt_;
 };
 
 #endif // SWAP_H

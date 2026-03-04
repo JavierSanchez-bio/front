@@ -25,6 +25,7 @@ public:
     // Extrae el factor de descuento IMPLÍCITO según las fórmulas del Tema 3.
     // Esto será vital para el Bootstrapping.
     double impliedDiscountFactor() const;
+    double computeDiscountFactor(double& annuity) const override;
     
     // Getters
     double getRate() const { return rate_; }

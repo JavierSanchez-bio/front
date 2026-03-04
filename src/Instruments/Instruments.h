@@ -25,6 +25,12 @@ public:
     // Esto hace que la clase sea abstracta. Nadie puede hacer un `new Instrument()`.
     // Obliga a Bond y Swap a escribir su propia versión de price().
     virtual double price() const = 0; 
+
+    // Añadir en Instruments.h dentro de public:
+    // Pasamos annuity por REFERENCIA (&) para que cada instrumento sume su parte
+    virtual double computeDiscountFactor(double& annuity) const { 
+        return 0.0; 
+    }
 };
 
 #endif // INSTRUMENT_H
