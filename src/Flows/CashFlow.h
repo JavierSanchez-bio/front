@@ -11,6 +11,7 @@ namespace Flows {
         CashFlow(double amt, double yf) : amount(amt), yearFraction(yf) {}
         double presentValue(double rate) const;
         double getAmount() const { return amount; }
+        double getYearFraction() const { return yearFraction; }
     };
 }
 
