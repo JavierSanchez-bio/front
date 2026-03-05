@@ -2,21 +2,52 @@
 #include <boost/test/unit_test.hpp>
 #include <Flows/CashFlow.h>
 
-BOOST_AUTO_TEST_SUITE(FlowsSuite)
+#include <cmath>
 
-BOOST_AUTO_TEST_CASE(test_cashflow_pv)
+BOOST_AUTO_TEST_SUITE(CashFlow_Tests)
+
+BOOST_AUTO_TEST_CASE(test_initialization)
 {
-    double nominal = 1000.0;
-    double t = 2.0;    // 2 años
-    double r = 0.05;   // 5% interés
+    Flows::CashFlow cf(100.0, 0.5);
     
-    Flows::CashFlow cf(nominal, t);
-    
-    // PV esperado = 1000 / (1.05^2) = 907.029
-    double esperado = 907.029478;
-    double resultado = cf.presentValue(r);
+    BOOST_TEST(cf.getAmount() == 100.0);
+    BOOST_TEST(cf.getYearFraction() == 0.5);
+}
 
-    BOOST_TEST(resultado == esperado, boost::test_tools::tolerance(1e-6));
+BOOST_AUTO_TEST_CASE(test_present_value_standard)
+{
+    Flows::CashFlow cf(100.0, 2.0);
+    double rate = 0.05;
+    
+    double expected_pv = 100.0 * std::exp(-rate * 2.0);
+    
+    BOOST_TEST(cf.presentValue(rate) == expected_pv, boost::test_tools::tolerance(1e-12));
+}
+
+BOOST_AUTO_TEST_CASE(test_present_value_zero_rate)
+{
+    Flows::CashFlow cf(100.0, 5.0);
+    double rate = 0.0;
+    
+    BOOST_TEST(cf.presentValue(rate) == 100.0, boost::test_tools::tolerance(1e-12));
+}
+
+BOOST_AUTO_TEST_CASE(test_present_value_immediate)
+{
+    Flows::CashFlow cf(150.0, 0.0);
+    double rate = 0.10;
+    
+    BOOST_TEST(cf.presentValue(rate) == 150.0, boost::test_tools::tolerance(1e-12));
+}
+
+BOOST_AUTO_TEST_CASE(test_present_value_negative_amount)
+{
+    Flows::CashFlow cf(-50.0, 1.0);
+    double rate = 0.03;
+    
+    double expected_pv = -50.0 * std::exp(-rate * 1.0);
+    
+    BOOST_TEST(cf.presentValue(rate) == expected_pv, boost::test_tools::tolerance(1e-12));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
