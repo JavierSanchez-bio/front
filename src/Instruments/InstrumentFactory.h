@@ -19,4 +19,4 @@ public:
         std::shared_ptr<ZeroCouponCurve> forwardCurve);
 };
 
-#endif // INSTRUMENT_FACTORY_H
+#endif

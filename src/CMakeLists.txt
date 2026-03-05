@@ -1,4 +1,3 @@
-add_subdirectory(Foo)
 add_subdirectory(Date)
 add_subdirectory(Flows)
 add_subdirectory(Maths)

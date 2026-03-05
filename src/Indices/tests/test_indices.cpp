@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Index.h"
-#include "Curves/ZeroCouponCurve.h" // Dependencia externa al módulo
+#include "Curves/ZeroCouponCurve.h"
 #include <memory>
 #include <vector>
 

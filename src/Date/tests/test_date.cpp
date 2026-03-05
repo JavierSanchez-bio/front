@@ -1,68 +1,64 @@
-#define BOOST_TEST_MODULE test_date
+#define BOOST_TEST_MODULE DateTests
 #include <boost/test/unit_test.hpp>
-#include "DayCount.h" // Ajusta esta ruta si es necesario
+#include "../DayCount.h"
+#include <stdexcept>
 
-// ESTO ES LO QUE BUSCA EL SCRIPT DEL PROFESOR:
-BOOST_AUTO_TEST_SUITE(DateSuite)
+BOOST_AUTO_TEST_SUITE(Date_DayCount_Tests)
 
-// --- Pruebas para Actual/360 ---
-
-BOOST_AUTO_TEST_CASE(test_act360_dias_basico)
+// Easy case
+BOOST_AUTO_TEST_CASE(test_basic)
 {
-    // Prueba usando strings (30 días exactos en enero)
-    short dias = Actual_360::compute_daycount("2023-01-01", "2023-01-31");
-    BOOST_TEST(dias == 30);
+    BOOST_TEST(Actual_360::compute_daycount("2023-01-01", "2023-01-02") == 1);
+    BOOST_TEST(Thirty_360::compute_daycount("2023-01-01", "2023-01-02") == 1);
+
+    BOOST_TEST(Actual_360::compute_daycount("2023-01-15", "2023-02-15") == 31);
+    BOOST_TEST(Thirty_360::compute_daycount("2023-01-15", "2023-02-15") == 30);
+
+    BOOST_TEST(Actual_360::compute_daycount("2023-01-10", "2024-01-10") == 365);
+    BOOST_TEST(Thirty_360::compute_daycount("2023-01-10", "2024-01-10") == 360);
 }
 
-BOOST_AUTO_TEST_CASE(test_act360_bisiesto)
+//End of month and bisiestos
+BOOST_AUTO_TEST_CASE(test_actual360_month_year)
 {
-    // Prueba usando fechas reales de Boost (año bisiesto: 29 días en febrero)
-    boost::gregorian::date d1(2024, 2, 1);
-    boost::gregorian::date d2(2024, 3, 1);
-    short dias = Actual_360::compute_daycount(d1, d2);
-    
-    BOOST_TEST(dias == 29);
+    BOOST_TEST(Actual_360::compute_daycount("2023-02-28", "2023-03-01") == 1);
+    BOOST_TEST(Actual_360::compute_daycount("2024-01-28", "2024-03-01") == 2);
 }
 
-BOOST_AUTO_TEST_CASE(test_act360_fraccion_ano)
+//30/360
+BOOST_AUTO_TEST_CASE(test_thirty360_rules)
 {
-    // Prueba del Functor (operator()) que devuelve el factor de descuento (double)
-    Actual_360 act360_calc;
-    boost::gregorian::date d1(2023, 1, 1);
-    boost::gregorian::date d2(2023, 4, 1); // 90 días exactos en un año no bisiesto
-    
-    double resultado = act360_calc(d1, d2);
-    
-    // Al comparar doubles, es buena práctica usar una tolerancia
-    BOOST_TEST(resultado == 0.25, boost::test_tools::tolerance(1e-6));
+    BOOST_TEST(Thirty_360::compute_daycount("2023-01-31", "2023-03-31") == 60);
+    BOOST_TEST(Thirty_360::compute_daycount("2023-01-30", "2023-01-31") == 0);
+    BOOST_TEST(Thirty_360::compute_daycount("2023-02-28", "2023-03-01") == 3);
 }
 
-// --- Pruebas para 30/360 ---
-
-BOOST_AUTO_TEST_CASE(test_thirty360_dias_basico)
+//Stress and robustness
+BOOST_AUTO_TEST_CASE(test_thirty360_cross_year_and_reversed)
 {
-    // De mediados de mes a mediados de mes (6 meses exactos -> 180 días)
-    short dias = Thirty_360::compute_daycount("2023-01-15", "2023-07-15");
-    BOOST_TEST(dias == 180);
+    BOOST_TEST(Thirty_360::compute_daycount("2023-11-15", "2024-02-15") == 90);
+
+    BOOST_TEST(Actual_360::compute_daycount("2023-01-11", "2023-01-01") == -10);
+    BOOST_TEST(Thirty_360::compute_daycount("2023-01-11", "2023-01-01") == -10);
 }
 
-BOOST_AUTO_TEST_CASE(test_thirty360_salto_ano)
+//Error control
+BOOST_AUTO_TEST_CASE(test_invalid_dates_and_dt_generation)
 {
-    // Un año completo en 30/360 SIEMPRE son 360 días
-    short dias = Thirty_360::compute_daycount("2023-01-01", "2024-01-01");
-    BOOST_TEST(dias == 360);
-}
+    BOOST_CHECK_THROW(DayCountCalculator::make_date("2023-02-29"), std::out_of_range);
+    
+    BOOST_CHECK_THROW(DayCountCalculator::make_date("2023-13-01"), std::out_of_range);
 
-BOOST_AUTO_TEST_CASE(test_thirty360_fraccion_ano)
-{
-    // Prueba del Functor para 30/360
-    Thirty_360 thirty360_calc;
-    boost::gregorian::date d1(2023, 1, 15);
-    boost::gregorian::date d2(2023, 7, 15); // 180 días calculados en 30/360
+    BOOST_CHECK_THROW(DayCountCalculator::make_date("esto-es-basura"), std::exception);
+
+    auto start = DayCountCalculator::make_date("2023-01-01");
+    auto end   = DayCountCalculator::make_date("2024-01-01");
     
-    double resultado = thirty360_calc(d1, d2);
+    Actual_360 act360;
+    Thirty_360 th360;
     
-    BOOST_TEST(resultado == 0.50, boost::test_tools::tolerance(1e-6));
+    BOOST_TEST(act360(start, end) == 365.0 / 360.0, boost::test_tools::tolerance(1e-12));
+    BOOST_TEST(th360(start, end) == 1.0, boost::test_tools::tolerance(1e-12));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

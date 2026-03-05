@@ -3,13 +3,12 @@
 
 #include <map>
 #include <memory>
-#include "Instruments.h" // Para que conozca la clase Instrument
+#include "Instruments.h"
 
 class Bootstrapping {
 public:
     Bootstrapping() {};
     
-    // CORREGIDO: Añadidos los tipos al map
     typedef std::map<double, double> DiscountCurveType; 
     typedef std::map<double, std::shared_ptr<Instrument>> InstrumentsMapType; 
     
@@ -18,4 +17,4 @@ public:
     virtual ~Bootstrapping() = default;
 };
 
-#endif // BOOTSTRAPPING_H
+#endif

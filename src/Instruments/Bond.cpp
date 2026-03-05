@@ -20,7 +20,6 @@ double Bond::price() const
 
 double Bond::yield() const
 {
-    // Si no nos dan precio, calculamos la TIR que iguala el precio teórico actual
     return yield(this->price());
 }
 
@@ -32,7 +31,6 @@ double Bond::yield(double target_price) const
         throw std::logic_error("Bond::yield: No se puede calcular la TIR de un bono sin flujos.");
     }
 
-    // Definimos f(y) = Sumatoria(CF * e^{-y * t}) - target_price
     std::function<double(double)> f = [&cfs, target_price](double y) {
         double pv = 0.0;
         for (const auto& cf : cfs) {
@@ -42,7 +40,6 @@ double Bond::yield(double target_price) const
         return pv - target_price;
     };
 
-    // Definimos f'(y) = Sumatoria(CF * (-t) * e^{-y * t})
     std::function<double(double)> df = [&cfs](double y) {
         double dpv = 0.0;
         for (const auto& cf : cfs) {
@@ -52,9 +49,7 @@ double Bond::yield(double target_price) const
         return dpv;
     };
 
-    // Estimación inicial (Seed) del 5%
     double initial_guess = 0.05;
 
-    // Llamamos a tu función de Newton-Raphson
     return Maths::newtonRaphson(f, df, initial_guess);
 }
