@@ -28,4 +28,4 @@ public:
     double getYearFraction() const { return yearFraction_; }
 };
 
-#endif // DEPOSIT_H
+#endif
