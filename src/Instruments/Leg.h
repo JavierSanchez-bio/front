@@ -5,9 +5,10 @@
 #include <cstddef>
 #include <memory>
 
-#include <Flows/CashFlow.h>
-#include <Instruments/ZeroCouponCurve.h>
-#include "Index.h" // Necesario para la FloatingLeg
+// Cambia tus includes actuales por estos:
+#include "Flows/CashFlow.h"       // Dependencia de Nivel 0
+#include "Curves/ZeroCouponCurve.h" // Dependencia de Nivel 0
+#include "Indices/Index.h"        // Dependencia de Nivel 1
 
 // Representa una pata genérica de un instrumento (lista de flujos).
 class Leg {

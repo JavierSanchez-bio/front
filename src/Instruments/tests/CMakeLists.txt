@@ -1,1 +1,1 @@
-boost_test_project(NAME test_instrument DEPS Instruments)
+boost_test_project(NAME test_instrument DEPS Instruments Curves Flows Indices Maths)

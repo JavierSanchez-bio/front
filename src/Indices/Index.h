@@ -2,7 +2,7 @@
 #define INDEX_H
 
 #include <memory>
-#include "ZeroCouponCurve.h"
+#include "Curves/ZeroCouponCurve.h"
 
 class Index {
 private:

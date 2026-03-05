@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE test_instrument
 #include <boost/test/unit_test.hpp>
 
-#include <Instruments/ZeroCouponCurve.h>
+#include <Curves/ZeroCouponCurve.h>
 #include <Instruments/Leg.h>
 #include <Instruments/Bond.h>
 #include <Instruments/Swap.h>
-#include <Instruments/Index.h>
+#include <Indices/Index.h>
 #include <Flows/CashFlow.h>
 #include <Instruments/InstrumentFactory.h>
 #include <Instruments/Bootstrapper.h>

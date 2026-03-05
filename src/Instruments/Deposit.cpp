@@ -1,5 +1,5 @@
 #include "Deposit.h"
-#include "ZeroCouponCurve.h"
+#include "Curves/ZeroCouponCurve.h"
 
 Deposit::Deposit(std::shared_ptr<ZeroCouponCurve> curve, 
                  double rate, 

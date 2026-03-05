@@ -1,1 +1,0 @@
-boost_test_project(NAME test_valuation DEPS Valuation)

@@ -1,7 +1,7 @@
 #include "InstrumentFactory.h"
 #include "Swap.h"
-#include "Index.h"
-#include <Flows/CashFlow.h>
+#include "Indices/Index.h"
+#include "Flows/CashFlow.h"
 
 std::shared_ptr<Instrument> InstrumentFactory::createSwap(
     double notional,
